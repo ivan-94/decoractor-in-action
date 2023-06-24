@@ -8,6 +8,7 @@ describe('computed', () => {
   test('non static', () => {
     expect(() => {
       class A {
+        // @ts-expect-error
         @computed
         static a = 1
       }
@@ -17,6 +18,7 @@ describe('computed', () => {
   test('only getter', () => {
     expect(() => {
       class A {
+        // @ts-expect-error
         @computed
         a = 1
       }

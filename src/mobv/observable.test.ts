@@ -60,4 +60,36 @@ describe('observable', () => {
     expect(num).toBe(2)
     expect(withoutInitialValue).toBe('withoutInitialValue')
   })
+
+  test('reactive object', () => {
+    class A {
+      @observable
+      obj = {
+        count: 1
+      }
+    }
+
+    const a = new A()
+
+    let count
+    watchSyncEffect(() => {
+      count = a.obj.count
+    })
+
+    expect(count).toBe(1)
+    a.obj.count = 2
+    expect(count).toBe(2)
+
+    // extends
+
+    class B extends A {
+      @observable
+      obj = {
+        count: 3
+      }
+    }
+
+    const b = new B()
+    expect(b.obj.count).toBe(3)
+  })
 })
