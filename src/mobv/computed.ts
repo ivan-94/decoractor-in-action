@@ -1,5 +1,5 @@
 /* eslint-disable prefer-rest-params */
-import { unref, computed as vueComputed } from 'vue'
+import { effectScope, unref, computed as vueComputed } from 'vue'
 
 import { initialIfNeed } from './utils'
 import type { Initializer } from './utils'
@@ -19,7 +19,9 @@ export const computed: MethodDecorator = function (target, propertyKey, descript
 
   const initialGetter = descriptor.get
   const accessor: Initializer = (self) => {
-    const value = vueComputed(() => initialGetter.call(self))
+    const scope = effectScope(true)
+
+    const value = scope.run(() => vueComputed(() => initialGetter.call(self)))
 
     return {
       get() {

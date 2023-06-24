@@ -107,6 +107,6 @@ describe('computed', () => {
     a.count++
     expect(count).toBe(4)
     // 不再响应
-    expect(count2).toBe(4)
+    expect(count2).toBe(6)
   })
 })
