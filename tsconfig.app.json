@@ -9,8 +9,8 @@
     "jsx": "react-jsx",
     "jsxImportSource": "vue",
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false,
+    // "experimentalDecorators": true,
+    // "useDefineForClassFields": false,
     "paths": {
       "@/*": ["./src/*"]
     }

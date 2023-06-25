@@ -1,42 +1,32 @@
 /* eslint-disable prefer-rest-params */
-import { ref, unref } from 'vue'
+import { ref, type Ref } from 'vue'
 
-import { initialIfNeed } from './utils'
-import type { Initializer } from './utils'
-
-export const observable: PropertyDecorator = function (target, propertyKey) {
-  if (typeof target === 'function') {
-    throw new Error('Observable cannot be used on static properties')
+export function observable<This, Value>(
+  value: ClassAccessorDecoratorTarget<This, Value>,
+  context: ClassAccessorDecoratorContext<This, Value>
+): ClassAccessorDecoratorResult<This, Value> | void {
+  if (context.kind !== 'accessor') {
+    throw new Error('observable can only be used on accessor')
   }
 
-  if (arguments.length > 2 && arguments[2] != null) {
-    throw new Error('Observable cannot be used on methods')
+  if (context.static) {
+    throw new Error('observable can not be used on static accessor')
   }
 
-  const accessor: Initializer = (self) => {
-    const descriptor = Object.getOwnPropertyDescriptor(self, propertyKey)
-    const initialValue = descriptor?.value
-    const value = ref(initialValue)
+  context.addInitializer(function (this: unknown) {})
 
-    return {
-      get() {
-        return unref(value)
-      },
-      set(val) {
-        value.value = val
-      }
-    }
-  }
-
-  // 定义属性
-  Object.defineProperty(target, propertyKey, {
-    enumerable: true,
-    configurable: true,
-    get: function () {
-      return initialIfNeed(this, propertyKey, accessor).get()
+  return {
+    get() {
+      return (value.get.call(this) as Ref<Value>).value
     },
-    set: function (value) {
-      initialIfNeed(this, propertyKey, accessor).set(value)
+    set(val) {
+      const ref = value.get.call(this) as Ref<Value>
+
+      ref.value = val
+    },
+    // @ts-expect-error 转换了初始值的类型
+    init(val) {
+      return ref(val)
     }
-  })
+  }
 }

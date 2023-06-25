@@ -1,39 +1,29 @@
 /* eslint-disable prefer-rest-params */
 import { effectScope, unref, computed as vueComputed } from 'vue'
 
-import { initialIfNeed } from './utils'
-import type { Initializer } from './utils'
-
-export const computed: MethodDecorator = function (target, propertyKey, descriptor) {
-  if (typeof target === 'function') {
+export function computed<This, Return, Value extends () => Return>(
+  value: Value,
+  context: ClassGetterDecoratorContext<This, Return>
+): Value | void {
+  if (context.static) {
     throw new Error('computed cannot be used on static member')
   }
 
-  if (
-    descriptor == null ||
-    typeof descriptor !== 'object' ||
-    typeof descriptor.get !== 'function'
-  ) {
+  if (context.kind !== 'getter') {
     throw new Error('computed can only be used on getter')
   }
 
-  const initialGetter = descriptor.get
-  const accessor: Initializer = (self) => {
+  context.addInitializer(function (this: unknown) {
     const scope = effectScope(true)
 
-    const value = scope.run(() => vueComputed(() => initialGetter.call(self)))
+    const val = scope.run(() => vueComputed(() => value.call(this)))
 
-    return {
+    Object.defineProperty(this, context.name, {
+      configurable: true,
+      enumerable: false,
       get() {
-        return unref(value)
-      },
-      set() {
-        // readonly
+        return unref(val)
       }
-    }
-  }
-
-  descriptor.get = function () {
-    return initialIfNeed(this, propertyKey, accessor).get()
-  }
+    })
+  })
 }

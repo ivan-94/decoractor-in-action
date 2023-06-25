@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test } from '@jest/globals'
 import { computed } from './computed'
-import { defineComponent, ref, watchSyncEffect } from 'vue'
+import { defineComponent, ref, watchSyncEffect, h } from 'vue'
 import { observable } from './observable'
 import { render } from '@testing-library/vue'
 
@@ -26,6 +26,7 @@ describe('computed', () => {
 
     expect(() => {
       class A {
+        // @ts-expect-error
         @computed
         method() {}
       }
@@ -33,6 +34,7 @@ describe('computed', () => {
 
     expect(() => {
       class A {
+        // @ts-expect-error
         @computed
         set setter(val: any) {}
       }
@@ -62,7 +64,7 @@ describe('computed', () => {
   test('render', () => {
     class A {
       @observable
-      count = 1
+      accessor count = 1
 
       @computed
       get double() {
@@ -80,12 +82,7 @@ describe('computed', () => {
         })
 
         return () => {
-          return (
-            <button>
-              {a.double}
-              {a.count}
-            </button>
-          )
+          return h('button', [a.double, a.count])
         }
       }
     })

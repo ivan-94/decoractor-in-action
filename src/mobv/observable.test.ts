@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test, expect } from '@jest/globals'
 import { observable } from './observable'
 import { watchSyncEffect } from 'vue'
 
@@ -7,30 +7,31 @@ describe('observable', () => {
     expect(() => {
       class A {
         @observable
-        static a = 1
+        static accessor a = 1
       }
-    }).toThrow('Observable cannot be used on static properties')
+    }).toThrow('observable can not be used on static accessor')
   })
 
   test('on method', () => {
     expect(() => {
       class A {
+        // @ts-expect-error
         @observable
         a() {}
       }
-    }).toThrow('Observable cannot be used on methods')
+    }).toThrow('observable can only be used on accessor')
   })
 
   test('base type', () => {
     class A {
       @observable
-      str = 'str'
+      accessor str = 'str'
 
       @observable
-      num = 1
+      accessor num = 1
 
       @observable
-      withoutInitialValue: any
+      accessor withoutInitialValue: any
     }
 
     const a = new A()
@@ -64,7 +65,7 @@ describe('observable', () => {
   test('reactive object', () => {
     class A {
       @observable
-      obj = {
+      accessor obj = {
         count: 1
       }
     }
@@ -84,7 +85,7 @@ describe('observable', () => {
 
     class B extends A {
       @observable
-      obj = {
+      accessor obj = {
         count: 3
       }
     }
