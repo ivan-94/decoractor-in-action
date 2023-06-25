@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import { computed } from './computed'
-import { defineComponent, ref, watchSyncEffect } from 'vue'
+import { defineComponent, ref, watchSyncEffect, computed as vueComputed, effectScope } from 'vue'
 import { observable } from './observable'
 import { render } from '@testing-library/vue'
+import * as mobx from 'mobx'
 
 describe('computed', () => {
   test('non static', () => {
@@ -110,5 +111,55 @@ describe('computed', () => {
     expect(count).toBe(4)
     // 不再响应
     expect(count2).toBe(6)
+  })
+
+  test('memory leak', () => {
+    const count = ref(0)
+    const scope = effectScope(true)
+    const double = scope.run(() => vueComputed(() => count.value * 2))!
+
+    const scope2 = effectScope()
+    scope2.run(() => {
+      watchSyncEffect(() => {
+        console.log(double.value)
+      })
+    })
+
+    const scope3 = effectScope()
+    scope3.run(() => {
+      watchSyncEffect(() => {
+        console.log(double.value)
+      })
+    })
+
+    scope2.stop()
+    scope3.stop()
+
+    console.log(scope)
+  })
+
+  test('memory leak on mobx', () => {
+    const count = mobx.observable.box(1)
+
+    const double = mobx.computed(() => count.get() * 2)
+
+    const scope1 = mobx.autorun(
+      () => {
+        console.log(double.get())
+      },
+      { name: 'scope' }
+    )
+    const scope2 = mobx.autorun(
+      () => {
+        console.log(double.get())
+      },
+      { name: 'scope' }
+    )
+
+    // release
+    scope1()
+    scope2()
+
+    console.log(scope1)
   })
 })

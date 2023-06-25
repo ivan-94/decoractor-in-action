@@ -14,6 +14,7 @@ specifiers:
   eslint: ^8.39.0
   eslint-plugin-vue: ^9.11.0
   jsdom: ^22.1.0
+  mobx: ^6.9.0
   npm-run-all: ^4.1.5
   prettier: ^2.8.8
   typescript: ~5.0.4
@@ -25,6 +26,7 @@ specifiers:
 
 dependencies:
   '@vue/reactivity': 3.3.4
+  mobx: 6.9.0
   vue: 3.3.2
   vue-router: 4.2.0_vue@3.3.2
 
@@ -2609,6 +2611,10 @@ packages:
       pkg-types: 1.0.3
       ufo: 1.1.2
     dev: true
+
+  /mobx/6.9.0:
+    resolution: {integrity: sha512-HdKewQEREEJgsWnErClfbFoVebze6rGazxFLU/XUyrII8dORfVszN1V0BMRnQSzcgsNNtkX8DHj3nC6cdWE9YQ==}
+    dev: false
 
   /ms/2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}

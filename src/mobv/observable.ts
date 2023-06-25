@@ -14,9 +14,9 @@ export const observable: PropertyDecorator = function (target, propertyKey) {
   }
 
   const accessor: Initializer = (self) => {
-    const descriptor = Object.getOwnPropertyDescriptor(self, propertyKey)
-    const initialValue = descriptor?.value
-    const value = ref(initialValue)
+    // const descriptor = Object.getOwnPropertyDescriptor(self, propertyKey)
+    // const initialValue = descriptor?.value
+    const value = ref()
 
     return {
       get() {
