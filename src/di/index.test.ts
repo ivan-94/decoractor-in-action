@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals'
-import { Container, injectable, Scope, type InjectionKey, injectAll } from '.'
+import { Container, injectable, Scope, type InjectionKey, injectAll, inject } from '.'
 
 interface Bird {
   fly(): void
@@ -127,6 +127,41 @@ describe('di', () => {
     const zoo = container.get(ZOO_KEY)
 
     expect(zoo).toBeInstanceOf(Zoo)
-		expect(zoo.getAllBirds().length).toBe(2)
+    expect(zoo.getAllBirds().length).toBe(2)
+    expect(zoo.getAllBirds()[0]).toBeInstanceOf(MyBird)
+    expect(zoo.getAllBirds()[1]).toBeInstanceOf(MyBird2)
+  })
+
+  test('cycle dependency', () => {
+    const container = new Container()
+
+    const A_KEY: InjectionKey<A> = Symbol('A')
+    const B_KEY: InjectionKey<B> = Symbol('B')
+
+    @injectable(A_KEY)
+    class A {
+      @inject(B_KEY)
+      b?: B
+
+      constructor() {}
+    }
+
+    @injectable(B_KEY)
+    class B {
+      @inject(A_KEY)
+      a?: A
+
+      constructor() {}
+    }
+
+    container.bind(A_KEY, A)
+    container.bind(B_KEY, B)
+
+    const a = container.get(A_KEY)
+    expect(a).toBeInstanceOf(A)
+    const b = container.get(B_KEY)
+    expect(b).toBeInstanceOf(B)
+    expect(a.b).toBe(b)
+    expect(b.a).toBe(a)
   })
 })

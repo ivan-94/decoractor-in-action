@@ -94,8 +94,12 @@ export function injectAll<T>(key: InjectionKey<T>) {
 type Ctor<T = unknown> = new (...args: any) => T
 
 export class Container {
+  // 绑定关系
   private bindings: Map<InjectionKey<unknown>, Ctor[]> = new Map()
+  // 单例对象池
   private pools: Map<Ctor, unknown> = new Map()
+  // 正在创建的对象
+  private creating: Map<Ctor, unknown> = new Map()
 
   bind<T>(key: InjectionKey<T>, impl: new (...args: any) => T) {
     if (impl[Symbol.metadata] == null) {
@@ -140,6 +144,10 @@ export class Container {
    * 对象实例化
    */
   private createInstance(impl: Ctor): unknown {
+    if (this.creating.has(impl)) {
+      return this.creating.get(impl)
+    }
+
     if (impl[Symbol.metadata] == null) {
       throw new Error(`No metadata found for ${impl.name}`)
     }
@@ -158,17 +166,24 @@ export class Container {
 
     // 实例化
     const instance = new impl()
-    // 依赖注入
-    if (injections != null) {
-      for (const injection of injections.values()) {
-        const { key, context, multiple } = injection
-        const value = multiple ? this.getAll(key) : this.get(key)
-        context.access.set(instance, value)
-      }
-    }
 
-    if (scope === Scope.Singleton) {
-      this.pools.set(impl, instance)
+    this.creating.set(impl, instance)
+
+    try {
+      // 依赖注入
+      if (injections != null) {
+        for (const injection of injections.values()) {
+          const { key, context, multiple } = injection
+          const value = multiple ? this.getAll(key) : this.get(key)
+          context.access.set(instance, value)
+        }
+      }
+
+      if (scope === Scope.Singleton) {
+        this.pools.set(impl, instance)
+      }
+    } finally {
+      this.creating.delete(impl)
     }
 
     return instance
